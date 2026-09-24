@@ -1,0 +1,15 @@
+# AI 课堂助手 - Python 核心依赖
+# 安装：pip install -r requirements.txt
+fastapi>=0.115
+uvicorn>=0.30
+sounddevice>=0.4.6      # 麦克风采集（WASAPI 共享模式）
+numpy>=1.26
+opencv-python>=4.9      # 摄像头/图像处理（共享模式）
+Pillow>=10.0
+faster-whisper>=1.0     # 本地语音转写（CPU int8）
+requests>=2.31
+httpx>=0.27
+pydantic>=2.7
+python-multipart>=0.0.9 # 课件上传表单
+psutil>=5.9
+pypdf>=4.2              # 教材 PDF 文本提取（本地知识库 RAG）

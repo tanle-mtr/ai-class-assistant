@@ -1,0 +1,31 @@
+# 运行时数据 / 配置（不提交）
+data/
+*.spec
+build/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Node / Vue 构建产物
+webui/node_modules/
+webui/dist/
+
+# .NET 构建产物
+tray/**/bin/
+tray/**/obj/
+
+# 日志
+*.log
+logs/
+
+# WorkBuddy 本地工作区（记忆/缓存，不进公开仓库）
+.workbuddy/
+
+# 系统与 IDE 杂项
+.DS_Store
+Thumbs.db

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI课堂助手 · 主面板</title>
+<style>
+:root {
+  --primary: #0F766E;
+  --primary-deep: #0B5F59;
+  --accent: #14B8A6;
+  --soft: #E3F6F3;
+  --soft-line: #A7DED6;
+  --bg: #EFF3F7;
+  --card: #FFFFFF;
+  --border: #E6ECF2;
+  --border-strong: #D8E1EA;
+  --ink: #0F172A;
+  --text: #334155;
+  --sub: #64748B;
+  --muted: #94A3B8;
+  --warn: #D97706;
+  --ok: #16A34A;
+  --danger: #DC2626;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  background: #E4E9EF; color: var(--ink);
+  display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+.panel {
+  width: 1000px; background: var(--bg); border-radius: 18px; overflow: hidden;
+  box-shadow: 0 18px 50px rgba(15,23,42,.18), 0 2px 8px rgba(15,23,42,.06);
+  border: 1px solid var(--border);
+}
+
+/* ---------------- 顶栏 ---------------- */
+.head {
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+}
+.brand-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; color: var(--primary); border-radius: 24px;
+  padding: 7px 20px 7px 9px; font-size: 16px; font-weight: 800; letter-spacing: .3px;
+}
+.brand-pill .logo {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--soft); color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-pill .logo svg { width: 18px; height: 18px; }
+.run-tag {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13.5px; font-weight: 700; color: #D7FBF1;
+}
+.run-tag .dot { width: 8px; height: 8px; border-radius: 50%; background: #5EEAD4; box-shadow: 0 0 0 3px rgba(94,234,212,.22); }
+.run-tag.off { color: #FECACA; }
+.run-tag.off .dot { background: #FCA5A5; box-shadow: 0 0 0 3px rgba(252,165,165,.22); }
+
+/* ---------------- 主体三栏 ---------------- */
+.body { display: grid; grid-template-columns: 1fr 1.32fr 1fr; gap: 14px; padding: 16px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+  padding: 16px 18px; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 6px 16px rgba(15,23,42,.04);
+}
+.card h3 { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+
+/* 当前课程 */
+.chip-tag {
+  display: inline-block; background: var(--soft); color: var(--primary);
+  font-size: 12px; font-weight: 700; border-radius: 20px; padding: 4px 13px; margin-bottom: 14px;
+}
+.lesson { display: flex; flex-direction: column; }
+.subject-big { font-size: 36px; font-weight: 800; color: var(--ink); line-height: 1.15; letter-spacing: -.5px; }
+.lesson-meta { color: var(--sub); font-size: 13px; line-height: 1.5; margin: 7px 0 0; }
+.lesson-left { color: var(--primary); font-size: 14px; font-weight: 700; line-height: 1.5; margin: 5px 0 10px; }
+.lesson-left.warn { color: var(--danger); }
+
+.ring-wrap { position: relative; width: 132px; height: 132px; margin: auto auto 6px; }
+.ring { transform: rotate(-90deg); display: block; }
+.ring .track { fill: none; stroke: #EDF1F5; stroke-width: 11; }
+.ring .bar { fill: none; stroke: var(--accent); stroke-width: 11; stroke-linecap: round; stroke-dasharray: 339.3; transition: stroke-dashoffset .4s; }
+.ring-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+}
+.ring-center .pct { font-size: 25px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+.ring-center .pct-label { font-size: 11px; color: var(--muted); }
+
+/* 课堂记录 */
+.rec { display: flex; flex-direction: column; }
+.rec-model {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 9px 14px; font-size: 12.5px; color: var(--sub); margin-bottom: 12px;
+}
+.rec-model b { color: var(--ink); font-weight: 700; margin-left: auto; }
+.rec-model .caret { color: var(--muted); font-size: 11px; }
+.wave {
+  width: 100%; height: 118px; flex: 1; min-height: 118px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 14px; display: block;
+}
+.rec-btns { display: flex; gap: 10px; }
+.btn {
+  flex: 1; border: none; border-radius: 10px; padding: 11px 0; font-size: 14px;
+  font-weight: 700; font-family: inherit; cursor: pointer; transition: .15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn.primary { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(15,118,110,.22); }
+.btn.primary:hover { background: var(--primary-deep); }
+.btn.ghost { background: var(--card); color: var(--text); border: 1px solid var(--border-strong); }
+.btn.ghost:hover { background: var(--bg); border-color: var(--muted); }
+
+/* 课表 */
+.schedule { display: flex; flex-direction: column; gap: 2px; }
+.schedule .row {
+  display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 8px;
+  font-size: 13.5px; color: var(--text);
+}
+.schedule .row .time { color: var(--sub); width: 46px; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.schedule .row .name { font-weight: 600; flex: 1; }
+.schedule .row .state { font-size: 11.5px; color: var(--muted); }
+.schedule .row.now { background: var(--soft); }
+.schedule .row.now .name { color: var(--primary); font-weight: 800; }
+.schedule .row.now .time { color: var(--primary); font-weight: 700; }
+.schedule .row.now .state { color: var(--primary); font-weight: 700; }
+
+/* 拖堂监测 */
+.overtime { display: flex; align-items: center; gap: 11px; }
+.ot-icon {
+  width: 34px; height: 34px; border-radius: 50%; background: #E7F8EF; color: var(--ok);
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+.ot-icon svg { width: 17px; height: 17px; }
+.ot-icon.warn { background: #FEF3E2; color: var(--warn); }
+.ot-text .t { font-size: 13.5px; font-weight: 700; }
+.ot-text .s { font-size: 12px; color: var(--sub); margin-top: 4px; line-height: 1.35; }
+.ot-text .s.warn { color: var(--danger); font-weight: 700; }
+
+/* 快捷操作 */
+.quick { display: flex; flex-direction: column; gap: 12px; }
+.q-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.q-row .q-t { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.q-row .q-s { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+.q-left { display: flex; align-items: center; gap: 9px; }
+.q-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.q-dot.on { background: var(--ok); box-shadow: 0 0 0 3px rgba(22,163,74,.16); }
+
+/* 开关 */
+.switch {
+  position: relative; width: 46px; height: 25px; border-radius: 20px; background: #D8E1EA;
+  border: none; cursor: pointer; transition: background .18s; flex: none; padding: 0;
+}
+.switch::after {
+  content: ''; position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.22);
+  transition: transform .18s;
+}
+.switch.on { background: var(--accent); }
+.switch.on::after { transform: translateX(21px); }
+
+/* ---------------- 底栏 ---------------- */
+.foot {
+  display: flex; align-items: center; gap: 30px;
+  background: var(--card); border-top: 1px solid var(--border);
+  padding: 13px 24px; font-size: 12.5px; color: var(--sub);
+}
+.foot .item { display: flex; align-items: center; gap: 7px; }
+.foot .item .k { color: var(--muted); }
+.foot b { color: var(--ink); font-weight: 700; }
+.foot .ok { color: var(--ok); font-weight: 700; }
+.foot .bad { color: var(--danger); font-weight: 700; }
+.foot .fdot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.foot .fdot.on { background: var(--ok); }
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="head">
+    <div class="brand-pill">
+      <span class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v14H6.5A2.5 2.5 0 0 0 4 19.5z"/>
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H19v4H6.5A2.5 2.5 0 0 1 4 19.5z"/>
+        </svg>
+      </span>
+      <span>AI课堂助手</span>
+    </div>
+    <div class="run-tag" id="runTag"><span class="dot"></span>运行中</div>
+  </div>
+
+  <div class="body">
+    <!-- 当前课程 -->
+    <div class="card lesson">
+      <div><span class="chip-tag">当前课程</span></div>
+      <div class="subject-big" id="subject">未在上课</div>
+      <div class="lesson-meta" id="lessonMeta">等待 ClassIsland 同步课表…</div>
+      <div class="lesson-left" id="lessonLeft"></div>
+      <div class="ring-wrap">
+        <svg class="ring" width="132" height="132" viewBox="0 0 128 128">
+          <circle class="track" cx="64" cy="64" r="54"></circle>
+          <circle class="bar" id="ringBar" cx="64" cy="64" r="54" stroke-dashoffset="339.3"></circle>
+        </svg>
+        <div class="ring-center"><div class="pct" id="ringPct">0%</div><div class="pct-label">课程进度</div></div>
+      </div>
+    </div>
+
+    <!-- 课堂记录 -->
+    <div class="card rec">
+      <h3 id="recState">课堂记录中</h3>
+      <div class="rec-model">
+        <span>模型</span><b id="recModel">加载中…</b><span class="caret">▾</span>
+      </div>
+      <svg class="wave" id="wave" viewBox="0 0 300 118" preserveAspectRatio="none"></svg>
+      <div class="rec-btns">
+        <button class="btn primary" id="btnSummary">生成总结</button>
+        <button class="btn ghost" id="btnExport">导出课堂</button>
+      </div>
+    </div>
+
+    <!-- 课表 + 拖堂 + 快捷 -->
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div class="card">
+        <h3>今日课表</h3>
+        <div class="schedule">
+          <div class="row"><span class="time">08:00</span><span class="name">语文</span><span class="state">已完成</span></div>
+          <div class="row now" id="rowNow"><span class="time" id="tNow">09:35</span><span class="name" id="nNow">数学</span><span class="state" id="sNow">正在上课</span></div>
+          <div class="row"><span class="time">10:25</span><span class="name">英语</span><span class="state">未开始</span></div>
+          <div class="row"><span class="time">14:00</span><span class="name">物理</span><span class="state">未开始</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="overtime">
+          <div class="ot-icon" id="otIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                 stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>
+          </div>
+          <div class="ot-text">
+            <div class="t">拖堂监测</div>
+            <div class="s" id="otState">监测中 · 未拖堂</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>快捷操作</h3>
+        <div class="quick">
+          <div class="q-row">
+            <div class="q-left">
+              <div>
+                <div class="q-t">开启监控</div>
+              </div>
+            </div>
+            <button class="switch" id="qMonitor" aria-label="监控开关"></button>
+          </div>
+          <div class="q-row">
+            <div class="q-left">
+              <span class="q-dot" id="qTunnelDot"></span>
+              <div>
+                <div class="q-t">隧道连接</div>
+                <div class="q-s" id="qTunnelS">未连接</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="item"><span class="fdot" id="fMonitorDot"></span>监控 <b id="fMonitor">开启</b></div>
+    <div class="item">存储 <b id="fStorage">导出: --</b></div>
+    <div class="item"><span class="fdot" id="fTunnelDot"></span>隧道 <b id="fTunnel" class="bad">未连接</b></div>
+    <div class="item" style="margin-left:auto">模型 <b id="fModel">--</b></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id)
+let state = {}, dbData = { samples: [] }
+
+async function poll() {
+  try {
+    const r = await fetch('/api/state'); state = await r.json()
+  } catch (e) { state = {} }
+  try {
+    const r = await fetch('/api/db'); dbData = await r.json()
+  } catch (e) { dbData = { samples: [] } }
+  render()
+}
+
+function render() {
+  const s = state.session
+  const ok = !!s || !!state.model
+  $('runTag').innerHTML = '<span class="dot"></span>' + (ok ? '运行中' : '离线')
+  $('runTag').className = 'run-tag' + (ok ? '' : ' off')
+
+  // 课程
+  const ring = $('ringBar'), C = 339.3
+  if (s) {
+    const dur = s.duration_min || 40, el = s.elapsed_min || 0
+    const p = Math.min(100, Math.round(el / dur * 100))
+    ring.style.strokeDashoffset = C * (1 - p / 100)
+    $('ringPct').textContent = p + '%'
+    $('subject').textContent = s.subject || '未知课程'
+    const st = s.start ? String(s.start).slice(11, 16) : '??:??'
+    const en = s.end ? String(s.end).slice(11, 16) : st
+    $('lessonMeta').textContent = `${s.class_name || ''} · ${st}-${en}`
+    $('lessonLeft').textContent = s.overtime ? '拖堂检测中' : `距下课 ${Math.max(0, dur - el)} 分钟`
+    $('lessonLeft').className = s.overtime ? 'lesson-left warn' : 'lesson-left'
+    $('rowNow').className = 'row now'
+    $('tNow').textContent = st
+    $('nNow').textContent = s.subject || '数学'
+    $('sNow').textContent = s.overtime ? '拖堂检测' : '正在上课'
+  } else {
+    ring.style.strokeDashoffset = C
+    $('ringPct').textContent = '0%'
+    $('subject').textContent = '未在上课'
+    $('lessonMeta').textContent = '等待 ClassIsland 同步课表…'
+    $('lessonLeft').textContent = ''
+    $('rowNow').className = 'row'
+  }
+
+  // 记录 + 波形（samples 为数字数组；空数据/后端异常时不显示 NaN）
+  const vals = dbValues(dbData.samples || [])
+  const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0
+  const peak = vals.length ? Math.max.apply(null, vals) : 0
+  $('recModel').textContent = state.model || '未选择'
+  $('recState').textContent = s ? '课堂记录中' : '空闲'
+  drawWave(dbData.samples || [])
+
+  // 拖堂
+  const ot = s && s.overtime
+  $('otState').textContent = ot
+    ? '疑似拖堂'
+    : (s ? '监测中 · 未拖堂' : '等待上课')
+  $('otState').className = ot ? 's warn' : 's'
+  $('otIcon').className = ot ? 'ot-icon warn' : 'ot-icon'
+  $('otIcon').innerHTML = ot
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 7.5v6M12 17h.01"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>'
+
+  // 快捷
+  const mon = !!state.monitor_enabled
+  $('qMonitor').className = 'switch' + (mon ? ' on' : '')
+  const tun = !!(state.tunnel && state.tunnel.running)
+  $('qTunnelDot').className = 'q-dot' + (tun ? ' on' : '')
+  $('qTunnelS').textContent = tun ? '已连接' : '未连接'
+
+  // 底部
+  $('fMonitor').textContent = mon ? '开启' : '关闭'
+  $('fMonitorDot').className = 'fdot' + (mon ? ' on' : '')
+  $('fTunnel').textContent = tun ? '已连接' : '未连接'
+  $('fTunnel').className = tun ? 'ok' : 'bad'
+  $('fTunnelDot').className = 'fdot' + (tun ? ' on' : '')
+  $('fModel').textContent = state.model || '--'
+  const today = new Date(); const p2 = n => String(n).padStart(2, '0')
+  $('fStorage').textContent = '导出: ' + `${today.getFullYear()}-${p2(today.getMonth()+1)}-${p2(today.getDate())}`
+}
+
+// /api/db 的 samples 为数字数组（单位 dB）；兼容历史字典结构并过滤脏数据
+function dbValues(samples) {
+  return (samples || [])
+    .map(v => (v && typeof v === 'object') ? Number(v.db) : Number(v))
+    .filter(v => isFinite(v))
+}
+
+// 真实分贝刻度：默认 30~90 dB，超出时自适应扩展
+function dbScale(vals) {
+  let lo = 30, hi = 90
+  if (vals.length) {
+    const mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals)
+    lo = Math.min(30, Math.floor(mn / 5) * 5)
+    hi = Math.max(90, Math.ceil(mx / 5) * 5)
+    if (mx < 70) hi = Math.max(60, Math.ceil(mx / 5) * 5 + 5)
+    if (mn > 50) lo = Math.max(20, Math.floor(mn / 5) * 5 - 5)
+  }
+  if (hi - lo < 10) hi = lo + 10
+  return { lo: lo, hi: hi }
+}
+
+// 柱状分贝波形（对照效果图 01）
+function drawWave(samples) {
+  const svg = $('wave')
+  const vals = dbValues(samples)
+  if (!vals.length) { svg.innerHTML = ''; return }
+  const W = 300, H = 118, padT = 8, padB = 8
+  const sc = dbScale(vals)
+  const y = v => padT + (1 - Math.min(Math.max((v - sc.lo) / (sc.hi - sc.lo), 0), 1)) * (H - padT - padB)
+
+  let grid = ''
+  for (let k = 0; k <= 3; k++) {
+    const gy = padT + k * (H - padT - padB) / 3
+    grid += '<line x1="0" y1="' + gy.toFixed(1) + '" x2="' + W + '" y2="' + gy.toFixed(1) +
+            '" stroke="#E6ECF2" stroke-width="1"/>'
+  }
+
+  const n = vals.length
+  const slot = W / n
+  const bw = Math.max(1.3, slot * 0.6)
+  let bars = ''
+  vals.forEach((v, i) => {
+    const cx = i * slot + slot / 2
+    const top = y(v)
+    const h = Math.max(1.6, H - padB - top)
+    bars += '<rect x="' + (cx - bw / 2).toFixed(2) + '" y="' + top.toFixed(2) +
+            '" width="' + bw.toFixed(2) + '" height="' + h.toFixed(2) +
+            '" rx="' + Math.min(bw / 2, 1.5).toFixed(2) + '" fill="url(#waveGrad)"/>'
+  })
+
+  svg.innerHTML =
+    '<defs><linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0%" stop-color="#0F766E"/><stop offset="100%" stop-color="#5EEAD4"/>' +
+    '</linearGradient></defs>' + grid + bars
+}
+
+$('btnSummary').onclick = async () => {
+  try { await fetch('/api/summarize', { method: 'POST' }); alert('已开始生成总结') } catch (e) { alert('生成失败') }
+}
+$('btnExport').onclick = async () => {
+  try { await fetch('/api/export', { method: 'POST' }); alert('已开始导出') } catch (e) { alert('导出失败') }
+}
+// 监控开关（点击切换）
+$('qMonitor').onclick = async () => {
+  const next = !(state.monitor_enabled)
+  try {
+    await fetch('/api/monitor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: next }),
+    })
+  } catch (e) { /* 后端未就绪时忽略 */ }
+  $('qMonitor').className = 'switch' + (next ? ' on' : '')
+}
+
+poll()
+setInterval(poll, 10000)
+</script>
+</body>
+</html>

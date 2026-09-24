@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ClassIslandBridge</AssemblyName>
+    <RootNamespace>ClassIslandBridge</RootNamespace>
+    <ApplicationIcon>..\..\icons\app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="ClassIsland.Shared.IPC" Version="1.6.0" />
+  </ItemGroup>
+</Project>
