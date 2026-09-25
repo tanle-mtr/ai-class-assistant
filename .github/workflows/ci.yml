@@ -58,17 +58,11 @@ jobs:
         run: dotnet --list-sdks
         shell: pwsh
 
-      # 两个工程都要 restore，否则下面的 --no-restore 会报 NETSDK1004: 缺 project.assets.json
-      - name: Restore
-        run: |
-          dotnet restore tray/ClassIslandBridge/ClassIslandBridge.csproj
-          dotnet restore tray/AssistantTray/AssistantTray.csproj
-        shell: pwsh
-
+      # 用隐式还原（dotnet build 默认会 restore），避免漏 restore 某个工程导致 NETSDK1004
       - name: Build ClassIslandBridge
-        run: dotnet build tray/ClassIslandBridge/ClassIslandBridge.csproj -c Release --no-restore -warnaserror
+        run: dotnet build tray/ClassIslandBridge/ClassIslandBridge.csproj -c Release -warnaserror
         shell: pwsh
 
       - name: Build AssistantTray
-        run: dotnet build tray/AssistantTray/AssistantTray.csproj -c Release --no-restore -warnaserror
+        run: dotnet build tray/AssistantTray/AssistantTray.csproj -c Release -warnaserror
         shell: pwsh
