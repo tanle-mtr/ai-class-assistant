@@ -97,8 +97,14 @@ class CameraMonitor:
             self._analyze(frame)
 
     def _ensure_auto_segment(self):
-        """监控默认开启：无课程会话时也按 30 分钟切片录制"""
-        if not config.get("monitor_enabled", True) or not config.get("record_camera", True):
+        """无人上课时的自动切片录像，默认关闭，仅在 monitor_always_record 打开时生效。
+
+        默认行为：不产生任何录像文件，摄像头仅维持就座率/人脸分析所需的取流
+        （拖堂判定依赖），不写入磁盘。
+        """
+        if not config.get("monitor_enabled", True):
+            return
+        if not config.get("monitor_always_record", False):
             return
         if self._writer is not None:
             if self._segment_start and time.time() - self._segment_start >= 1800:
@@ -193,6 +199,14 @@ class CameraMonitor:
     def stop_recording(self, session):
         self._session = None
         self._close_writer()
+
+    def close_auto_writers(self):
+        """关闭无人上课期间的自动切片录像（不影响上课中的录像）。
+
+        供「始终录像」开关被关闭时立刻停止落盘，避免关闭后仍有片段写入。
+        """
+        if self._session is None:
+            self._close_writer()
 
     def _close_writer(self):
         if self._writer is not None:

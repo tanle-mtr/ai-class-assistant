@@ -112,6 +112,14 @@ class AudioMonitor:
         self._session = None
         self._stop_recording()
 
+    def close_auto_writers(self):
+        """关闭无人上课期间的自动切片录音（不影响上课中的录音）。
+
+        供「始终录音」开关被关闭时立刻停止落盘，避免关闭后仍有片段写入。
+        """
+        if self._session is None:
+            self._stop_recording()
+
     def _stop_recording(self):
         self._recording = False
         self._asr_enabled = False
@@ -126,8 +134,13 @@ class AudioMonitor:
 
     # ---------- 监控常驻录音 ----------
     def _ensure_auto_recording(self):
-        """监控默认开启：无课程会话时按 30 分钟切片录音"""
-        if not config.get("monitor_enabled", True) or not config.get("record_audio", True):
+        """无人上课时的自动切片录音，默认关闭，仅在 monitor_always_record 打开时生效。
+
+        默认行为：麦克风仅做分贝采样（供课堂活跃度/拖堂判定用），不写入音频文件。
+        """
+        if not config.get("monitor_enabled", True):
+            return
+        if not config.get("monitor_always_record", False):
             return
         if self._recording and self._wav:
             if self._segment_start and time.time() - self._segment_start >= 1800:

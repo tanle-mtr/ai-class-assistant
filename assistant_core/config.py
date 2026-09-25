@@ -51,8 +51,9 @@ DEFAULT_CONFIG: dict = {
     "web_port": 18760,                  # 网页控制台端口（端口被占用时自动顺延）
     # 感知
     "monitor_enabled": True,            # 监控默认开启
-    "record_camera": True,              # 监控录摄像头
-    "record_audio": True,               # 监控录音频
+    "record_camera": True,              # 上课时录摄像头
+    "record_audio": True,               # 上课时录音频
+    "monitor_always_record": False,     # 无人上课时也自动切片录像/录音（默认关闭，隐私优先）
     "retention_days": 14,               # 监控录像保留天数
     "screen_analysis_interval": 30,     # 屏幕分析间隔（秒）
     # 拖堂判定

@@ -118,6 +118,9 @@ def create_app() -> FastAPI:
             "model": config.get("model", ""),
             "vision_model": config.get("vision_model", ""),
             "monitor_enabled": config.get("monitor_enabled", True),
+            "record_camera": config.get("record_camera", True),
+            "record_audio": config.get("record_audio", True),
+            "monitor_always_record": config.get("monitor_always_record", False),
             "tunnel": cloudflared.status(),
             "public_ip": a.public_ip() if a else "",
         }
@@ -514,9 +517,31 @@ def create_app() -> FastAPI:
     # ---------- 快捷操作：监控开关（托盘主面板用） ----------
     @app.post("/api/monitor")
     def set_monitor(payload: dict):
-        """切换 monitor_enabled；上课中尽力即时启停录音，失败仅告警不抛异常"""
+        """切换监控开关与「始终录像/录音」。
+
+        monitor_enabled：总开关；上课中尽力即时启停录音，失败仅告警不抛异常。
+        always_record：无人上课时是否也自动切片录像/录音，默认关闭。
+        """
         enabled = bool(payload.get("enabled", True))
         config.set("monitor_enabled", enabled)
+
+        always = payload.get("always_record")
+        if always is not None:
+            always = bool(always)
+            config.set("monitor_always_record", always)
+            a = _app_ref["app"]
+            try:
+                if a is not None:
+                    if not always:
+                        # 立刻停掉已在写入的自动切片，关闭后不再产生新文件
+                        a._audio.close_auto_writers()
+                        a._camera.close_auto_writers()
+                    else:
+                        # 打开后，等下一次采样/取帧再按新策略起片
+                        pass
+            except Exception as e:
+                log.warning(f"始终录像开关即时生效失败（配置已保存）: {e}")
+
         a = _app_ref["app"]
         session = getattr(a, "session", None) if a else None
         if session is not None:
@@ -527,7 +552,11 @@ def create_app() -> FastAPI:
                     a._audio.stop_recording(session)
             except Exception as e:
                 log.warning(f"监控开关即时生效失败（配置已保存）: {e}")
-        return {"ok": True, "monitor_enabled": enabled}
+        return {
+            "ok": True,
+            "monitor_enabled": enabled,
+            "monitor_always_record": config.get("monitor_always_record", False),
+        }
 
     # ---------- 优雅停机（关机脚本调用） ----------
     @app.post("/api/shutdown")
