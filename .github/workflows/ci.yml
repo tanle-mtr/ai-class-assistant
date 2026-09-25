@@ -54,8 +54,15 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Show SDKs
+        run: dotnet --list-sdks
+        shell: pwsh
+
+      # 两个工程都要 restore，否则下面的 --no-restore 会报 NETSDK1004: 缺 project.assets.json
       - name: Restore
-        run: dotnet restore tray/ClassIslandBridge/ClassIslandBridge.csproj
+        run: |
+          dotnet restore tray/ClassIslandBridge/ClassIslandBridge.csproj
+          dotnet restore tray/AssistantTray/AssistantTray.csproj
         shell: pwsh
 
       - name: Build ClassIslandBridge
