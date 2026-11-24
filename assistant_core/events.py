@@ -1,4 +1,8 @@
-"""事件总线：课程开始/结束、拖堂、分贝、监控等事件的发布与订阅"""
+"""同步、线程安全的事件总线。
+
+事件名严格按契约第 5 节：classisland.state / perception.db_sample /
+perception.asr_segment / session.start / session.end / session.overtime。
+"""
 from __future__ import annotations
 
 import threading
@@ -6,58 +10,68 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable
 
-from .logger import get_logger
+from . import get_logger
 
 log = get_logger("events")
 
 
 @dataclass
 class Event:
-    """一条事件"""
-    type: str                 # 事件类型
-    data: dict = field(default_factory=dict)
+    """一条事件：type 事件名，data 负载，ts 产生时间。"""
+    type: str
+    data: dict[str, Any] = field(default_factory=dict)
     ts: datetime = field(default_factory=datetime.now)
 
-    def __repr__(self):
+    def get(self, key: str, default: Any = None) -> Any:
+        return self.data.get(key, default)
+
+    def __repr__(self) -> str:
         return f"<Event {self.type} {self.data}>"
 
 
 class EventBus:
-    """线程安全的事件总线"""
+    """订阅/发布（同步派发，单处理器异常不影响其它处理器）。"""
 
-    def __init__(self):
-        self._subs: dict[str, list[Callable]] = {}
-        self._lock = threading.Lock()
+    def __init__(self) -> None:
+        self._subs: dict[str, list[Callable[[Event], None]]] = {}
+        self._lock = threading.RLock()
 
-    def on(self, event_type: str, handler: Callable):
-        """订阅事件"""
+    def on(self, event_type: str, handler: Callable[[Event], None]) -> None:
         with self._lock:
             self._subs.setdefault(event_type, []).append(handler)
 
-    def off(self, event_type: str, handler: Callable):
+    def off(self, event_type: str, handler: Callable[[Event], None]) -> None:
         with self._lock:
-            subs = self._subs.get(event_type, [])
-            if handler in subs:
-                subs.remove(handler)
+            handlers = self._subs.get(event_type, [])
+            if handler in handlers:
+                handlers.remove(handler)
 
-    def emit(self, event_type: str, **data):
-        """发布事件（异步派发，不阻塞发布者）"""
-        ev = Event(event_type, data)
+    def emit(self, event_type: str, **data: Any) -> Event:
+        """同步派发；处理器异常只记日志，绝不影响发布者。"""
+        event = Event(event_type, data)
         with self._lock:
             handlers = list(self._subs.get(event_type, []))
-        for h in handlers:
+        for handler in handlers:
             try:
-                h(ev)
-            except Exception as e:
-                log.exception(f"事件处理器异常 [{event_type}]: {e}")
+                handler(event)
+            except Exception as exc:
+                log.exception(f"事件处理器异常 [{event_type}]: {exc}")
+        return event
 
-    # ---- 常用事件常量 ----
-    # classisland.lesson_started / lesson_ended / state_changed
-    # perception.db_sample  (分贝样本)
-    # overtime.detected    (拖堂)
-    # session.started / session.ended  (课程会话)
-    # monitor.frame        (监控帧)
-    # summary.generated    (总结生成)
+    def clear(self, event_type: str | None = None) -> None:
+        with self._lock:
+            if event_type is None:
+                self._subs.clear()
+            else:
+                self._subs.pop(event_type, None)
 
+
+# 契约事件名常量（避免各处硬编码拼写不一致）
+CLASSISLAND_STATE = "classisland.state"
+PERCEPTION_DB_SAMPLE = "perception.db_sample"
+PERCEPTION_ASR_SEGMENT = "perception.asr_segment"
+SESSION_START = "session.start"
+SESSION_END = "session.end"
+SESSION_OVERTIME = "session.overtime"
 
 bus = EventBus()

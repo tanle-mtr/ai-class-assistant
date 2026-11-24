@@ -1,6 +1,6 @@
-# AI Classroom Assistant ｜ AI 课堂助手
+# AI 课堂助手 ｜ AI Classroom Assistant
 
-> 常驻托盘的智能课堂辅助软件：监听 ClassIsland 获取当前课程，共享方式采集麦克风/摄像头/屏幕，下课自动生成 Markdown 课堂总结、导学案、思维导图与分贝报告；支持监控切片、OpenList 挂载、Cloudflare Tunnel 内网穿透与课件按科目上传。
+> Windows 桌面课堂助手：托盘常驻，跟随 ClassIsland 感知上课/下课，共享方式采集麦克风/摄像头/屏幕，下课后本地生成课堂总结、导学案、思维导图与分贝报告；支持课件上传、教科书知识库、座位表、OpenList 挂载与 Cloudflare Tunnel 远程访问。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-blue)
@@ -8,176 +8,96 @@
 ![.NET](https://img.shields.io/badge/.NET-8-blue)
 ![Vue](https://img.shields.io/badge/Vue-3-brightgreen)
 
-AI Classroom Assistant is a **multi-language Windows desktop app** that turns a regular classroom PC into an intelligent teaching assistant:
+**v2 全量重写版**（2026-11-24）：三层代码从零重构，架构与接口契约见 [`docs/重写架构契约.md`](docs/重写架构契约.md)。
 
-- 📚 Knows the **current lesson** by listening to [ClassIsland](https://github.com/ClassIsland/ClassIsland) (official IPC, no HTTP port needed)
-- 🎙️ Captures mic / camera / screen in **shared (non-exclusive) mode**, so the teacher's own software keeps working
-- 🤖 Runs **locally** via [Ollama](https://ollama.com) — you pick the model at startup (`ollama list`), nothing leaves the machine
-- 📝 Auto-generates Markdown deliverables when class ends:
-  - **Teacher summary** — class quality, what to elaborate on, what to shorten, anti-overtime advice
-  - **Student summary** — key points & difficulties
-  - **Student & teacher guided-learning plan** (导学案)
-  - **Review-class variant exercises** (讲评课变式练习)
-  - **Mind map** (Markdown + Markmap, new lessons only)
-  - **Exam/study-hall report** — per-minute dB line chart + average dB
-- 🎬 **Monitoring mode** — slices camera + audio **by lesson**, keeps 14 days, auto-cleans; screen is analyzed live but never archived
-- 🔒 **Recording is lesson-scoped by default** — the mic/camera streams stay open for dB sampling and seat analysis (needed for overtime detection), but nothing is written to disk unless a lesson is running. See [Recording scope](#recording-scope).
-- 🧠 Skips generation for non-learning sessions (movies / free time) or when the PC was mostly off — monitoring footage is still kept
-- 🗺️ Seat-map OCR from an uploaded photo + face-based auto seat-change detection
-- 📖 Textbook RAG knowledge base (official free e-textbooks or user-imported PDFs)
-- 🌐 OpenList mounting + **Cloudflare Tunnel** (no VPS needed) + auto public-IP lookup
-- 📤 Courseware upload, auto-categorized by subject, no password
+## 功能
 
-## Tech Stack
+- 📚 通过 [ClassIsland](https://github.com/ClassIsland/ClassIsland) 官方 IPC 获取当前课程，IPC 不可用时直读配置文件兜底
+- 🎙️ 麦克风 / 摄像头 / 屏幕以**共享模式**采集，不独占设备；分贝采样 + ASR 转写 + 就座率分析 + 拖堂判定
+- 🤖 本地 [Ollama](https://ollama.com) 推理，模型由用户选择，可按内置技能 Modelfile 打包专属模型；数据不出本机
+- 📝 下课自动产出 Markdown：老师总结（质量/细讲/缩短/防拖堂）、学生总结（重难点）、导学案、思维导图、分贝报告；按课型分流（新授课 / 评讲课 / 考试自习课）
+- 🔒 **隐私默认**：无人上课时取流仅用于分贝/就座率分析，**不落盘**；仅在课次内录制，保留 `retention_days` 天后自动清理
+- 📤 课件按科目自动分类上传，无需口令
+- 🗺️ 座位表图片 OCR 初始化 + 人脸建档 + 换座检测 + 导出
+- 📖 教科书知识库：官方免费教材匹配 + PDF 导入 + bge-m3 向量检索问答
+- 🌐 OpenList 挂载 + Cloudflare Tunnel 内网穿透 + 端口代理规则 + 公网 IP 查询
 
-| Layer | Language / Framework | Role |
-|---|---|---|
-| Core | Python 3.11+ | Audio capture / ASR / dB, camera, screen analysis, Ollama, RAG, summary pipeline, FastAPI web API |
-| Tray & bridge | C# (.NET 8 WinForms / console) | Autostart, tray resident, ClassIsland IPC bridge → HTTP 18761 |
-| Web console | Vue 3 + Vite | Overview / courseware upload / seat map / settings |
-| Scripts | PowerShell | Startup task & shutdown auto-export |
-
-Ports: web console **18760** (auto-increments when busy, never grabs **18761**), ClassIsland bridge **18761**, OpenList **5244**.
-
-## Project Layout
+## 目录结构与端口
 
 ```
-assistant_core/          Python core (FastAPI web API + perception + AI pipeline)
-  perception/            mic / camera / screen capture, face registry
-  ai/                    Ollama client, ASR, RAG, summarizer, vision
-  classisland/           IPC bridge client + config-file watcher
-  web/                   FastAPI server + API used by the web console
-  skills/                Markdown skill packs injected into the model
-tray/AssistantTray/      C# tray app (autostart, resident panel, process supervisor)
-tray/ClassIslandBridge/  C# console bridge → local HTTP 18761
-webui/                   Vue 3 + Vite web console (build to webui/dist)
-scripts/                 PowerShell start / stop / install-tasks
-docs/                    requirement spec, UI design, screenshots
-icons/                   app icon (.ico / .png)
+assistant_core/   Python 核心：config/events/models/cli + perception/ai/classisland/services/api
+webui/            Vue 3 控制台：总览/课件上传/课堂总结/监控/设置/教科书/座位表 + panel.html
+tray/             C# 托盘 + 原生主面板 + ClassIsland IPC 桥
+scripts/          开机启动 / 关机导出 / 任务注册
+docs/             需求规格、UI 效果图、架构契约、代码审查报告
 ```
 
-Runtime data (git-ignored) lives in `data/`:
-
-| Path | Contents |
+| 端口 | 用途 |
 |---|---|
-| `data/config/config.json` | All tunable options (see below) |
-| `data/recordings/<date>/` | Monitoring slices (.avi / .wav), auto-purged after `retention_days` |
-| `data/exports/<date>/` | Generated Markdown deliverables, grouped by subject |
-| `data/seats/seatmap.json` | Seat map + face registry |
-| `data/logs/assistant.log` | Runtime log |
+| **18760** | Web 控制台 API + 静态页面（被占用自动顺延，写回 config） |
+| **18761** | ClassIsland 桥（HTTP） |
+| **5244** | OpenList（可选） |
 
-## Quick Start
+运行时数据在 `data/`（已 gitignore），含 `config/`、`exports/`、`recordings/`、`seats/`、`courseware/`、`textbooks/`、`logs/`。
+
+## 快速开始
 
 ```powershell
-# 1) Python deps
-pip install -r assistant_core/requirements.txt
+# 1) Python 依赖
+pip install -r requirements.txt
 
-# 2) Ollama models (lightweight recommended for low-end PCs)
-ollama pull qwen3:1.7b      # main model
-ollama pull gemma3:1b       # vision (OCR / image description)
+# 2) Ollama 模型（低配机器选轻量模型）
+ollama pull qwen3:1.7b       # 主力
+ollama pull gemma3:1b        # 视觉（OCR / 识图）
+ollama pull bge-m3           # 教科书知识库向量检索（可选增强）
 
-# 3) Build C# tray & bridge
-cd tray\ClassIslandBridge; dotnet build -c Release
-cd ..\AssistantTray;        dotnet build -c Release
+# 3) 构建 C# 托盘与桥
+dotnet build tray/ClassIslandBridge/ClassIslandBridge.csproj -c Release
+dotnet build tray/AssistantTray/AssistantTray.csproj -c Release
 
-# 4) Build Vue console (the core serves webui/dist, so this must run at least once)
-cd webui; npm install; npm run build
+# 4) 构建 Vue 控制台（核心会托管 webui/dist）
+cd webui; npm install; npm run build; cd ..
 
-# 5) Run the tray
-tray\AssistantTray\bin\Release\net8.0-windows\AssistantTray.exe
+# 5) 运行
+python -m assistant_core.cli
+# 或直接启动托盘：tray\AssistantTray\bin\Release\net8.0-windows\AssistantTray.exe
 ```
 
-> The tray registers itself for autostart on first run and spawns the Python core + bridge.
-> Run `scripts\install-tasks.ps1` as admin to register the **shutdown auto-export** scheduled task.
+打开 `http://127.0.0.1:18760`。托盘首次运行会注册开机自启；`scripts\install-tasks.ps1`（管理员）注册关机自动导出任务。
 
-### Run the core directly (development)
+### 开发模式
 
 ```powershell
-python -m assistant_core.main
+cd webui; npm run dev     # Vite 5173，/api 代理到 18760
 ```
 
-Open the web console at `http://127.0.0.1:18760`.
+```powershell
+python -m compileall -q assistant_core run.py    # Python 语法校验
+python -m assistant_core.cli --export-only        # 离线导出（不起感知/Web）
+```
 
-Useful scripts:
-
-| Script | Purpose |
-|---|---|
-| `scripts\start-assistant.ps1` | Start core + bridge in the background |
-| `scripts\stop-assistant.ps1` | Stop them (also call this before rebooting — the bridge has a 20s self-heal timer) |
-| `scripts\install-tasks.ps1` | Register the shutdown auto-export scheduled task (admin) |
-
-### Build the packaged core
+### 打包
 
 ```powershell
 pip install pyinstaller
 pyinstaller assistant-core.spec --noconfirm
+# 产物 dist\assistant-core\assistant-core.exe（先 npm run build 打包 webui/dist）
 ```
 
-Output lands in `dist\assistant-core\assistant-core.exe`. Remember to `npm run build` in `webui/` first — the spec bundles `webui/dist` into the exe.
+## API
 
-### Develop the web console with HMR
+共 29 个端点，完整请求/响应契约见 [`docs/重写架构契约.md`](docs/重写架构契约.md) 第 4 节。核心：`/api/health`、`/api/state`、`/api/db`、`/api/schedule`、`/api/monitor`、`/api/shutdown`、`/api/models`、`/api/summaries`、`/api/upload`、`/api/textbook/*`、`/api/seatmap/*`、`/api/tunnel/*`。
 
-```powershell
-cd webui; npm run dev
-```
+## 技能库
 
-The Vite dev server runs on its own port; the Python core still serves the built console from `webui/dist`.
+`assistant_core/skills/*.md` 为 Markdown 技能包，注入 Ollama 作为系统提示词：课堂总结、导学案、思维导图、分贝报告、课程内容检查、识图 OCR、座位表解析、教科书问答等。放入新 `.md` 文件即可扩展。
 
-## Configuration
+## 隐私与合规
 
-All options live in `data/config/config.json` (created on first run from `assistant_core/config.py`). Edit and restart, or toggle the recording-related ones live from the web console.
-
-| Key | Default | Meaning |
-|---|---|---|
-| `monitor_enabled` | `true` | Master monitoring switch; can be flipped from the tray panel / console |
-| `record_camera` | `true` | Record the camera **during a lesson** |
-| `record_audio` | `true` | Record audio **during a lesson** (also feeds ASR) |
-| `monitor_always_record` | `false` | *Also* auto-slice camera+audio when no lesson is running. Off by default — see below |
-| `retention_days` | `14` | Days monitoring footage is kept before auto-purge |
-| `web_port` | `18760` | Web console port (auto-increments if taken) |
-| `classisland_bridge_port` | `18761` | Local HTTP port of the C# bridge |
-| `db_sample_interval` / `db_windows` | `1` / `60` | dB sampling interval and per-minute aggregation window |
-| `overtime_check_seconds` | `120` | How long to keep watching after the bell |
-| `overtime_screen_threshold` | `0.6` | Screen-activity ratio that counts as "still teaching" |
-| `overtime_seated_ratio` | `0.7` | Share of students still seated that counts as "still teaching" |
-
-## Recording scope
-
-This is the one deliberate deviation from the original spec (`docs/需求规格.md` §6, which asked for recording to start at boot).
-
-- **Default (`monitor_always_record: false`)** — the camera and microphone threads stay open so the app can sample dB levels and seat occupancy (the overtime detector needs both), but **no video or audio file is written unless a lesson is in progress**. Class结束后 immediately closes the writer.
-- **Spec behavior (`monitor_always_record: true`)** — restores 24/7 auto-slicing outside lessons. Turn it off again from the console and any in-flight "监控" slice is closed right away.
-
-If you enable always-record, remember that footage accumulates even at night — keep `retention_days` in mind and tell the class, per the spec's compliance note.
-
-## Built-in Skills
-
-`assistant_core/skills/*.md` — a Markdown skill system (frontmatter + body) injected into Ollama:
-
-- `classroom-summary` – teacher & student summaries
-- `guide-plan` – student guided-learning plan
-- `teacher-guide` – teacher guided-learning plan
-- `review-questions` – variant exercises for review classes
-- `mindmap` – Markmap mind map
-- `db-report` – exam/study-hall dB report
-- `lesson-content-check` – detects non-learning lessons (movies etc.)
-- `image-ocr` – **pure-text-AI image recognition** via local vision model
-- `seatmap-parse` – seat-map OCR
-- `textbook-qa` – textbook knowledge-base Q&A
-
-Add your own by dropping a new `.md` file into the skills folder.
-
-## Privacy
-
-- All sensitive data is processed **locally**; raw audio/video is never uploaded. Faces are not stored by default.
-- Monitoring footage stays on this machine and is auto-deleted after `retention_days` (14).
-- Recording is lesson-scoped by default — nothing is written to disk outside of class. The only way to change that is the explicit `monitor_always_record` option.
-- When deploying in schools, inform the class that monitoring is active.
+- 所有敏感数据**仅本机处理**，原始音视频不上传；人脸默认不落库。
+- 录像仅课次内写入，保留期满自动删除；`monitor_always_record` 可在设置中开启无人值守录制（默认关闭）。
+- 校园部署请告知班级监控安排，并遵守当地隐私与知情同意要求。
 
 ## License
 
 [MIT](LICENSE) © 2026 AI Classroom Assistant Contributors
-
-## Disclaimer
-
-This project is provided as-is. Make sure classroom monitoring complies with your school's / region's privacy and consent requirements.

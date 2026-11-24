@@ -1,66 +1,62 @@
-"""视觉识图（纯文本 AI 识图的核心）
-调用 Ollama 本地视觉模型对图片做描述 / OCR，把结果转成文本，
-供纯文本模型理解图片内容。
-"""
+"""视觉识图：本地视觉模型 OCR / 图片描述，把结果转成文本喂给纯文本模型。"""
 from __future__ import annotations
 
 import base64
 from pathlib import Path
 
-from ..config import config
-from ..logger import get_logger
-from .ollama_client import ollama
+from .. import get_logger
+from ..config import config, is_vision_model
+from .ollama import ollama
 
 log = get_logger("ai.vision")
 
 
-def _encode_image(image_path: str) -> str:
-    return base64.b64encode(Path(image_path).read_bytes()).decode("ascii")
+def encode_image(path: str) -> str:
+    return base64.b64encode(Path(path).read_bytes()).decode("ascii")
 
 
 class VisionEngine:
-    def __init__(self):
+    def __init__(self) -> None:
         self._model = config.get("vision_model") or ""
 
     def model(self) -> str:
+        """优先用配置里的视觉模型；未配置则从 ollama list 自动挑一个。"""
         if not self._model:
-            models = ollama.list_models()
-            for m in models:
-                name = m.get("name", "")
-                if any(k in name.lower() for k in ("vl", "vision", "llava", "gemma3", "minicpm")):
+            for item in ollama.list_models():
+                name = str(item.get("name", ""))
+                if is_vision_model(name):
                     self._model = name
                     config.set("vision_model", name)
                     break
         return self._model
 
     def available(self) -> bool:
-        m = self.model()
-        if not m:
-            return False
-        return any(x.get("name") == m for x in ollama.list_models())
+        model = self.model()
+        return bool(model) and any(
+            normalize(m) == normalize(model) for m in ollama.model_names()
+        )
 
     def describe(self, image_path: str, question: str = "请详细描述这张图片的内容。") -> str:
-        """图片 → 文本描述/OCR 结果"""
-        m = self.model()
-        if not m:
+        model = self.model()
+        if not model:
             return "[识图不可用：未安装视觉模型，请运行 ollama pull gemma3:1b 或 qwen2.5vl:3b]"
         try:
             return ollama.generate(
-                model=m,
-                prompt=question,
-                images=[_encode_image(image_path)],
-                temperature=0.1,
+                model, question, images=[encode_image(image_path)], temperature=0.1,
             )
-        except Exception as e:
-            log.warning(f"识图失败: {e}")
-            return f"[识图失败: {e}]"
+        except Exception as exc:
+            log.warning(f"识图失败: {exc}")
+            return f"[识图失败: {exc}]"
 
     def ocr(self, image_path: str) -> str:
-        """图片 OCR（扫描件、座位表等）"""
         return self.describe(
             image_path,
-            "请把这张图片中的全部文字内容逐字识别出来（OCR），保持原有顺序；若为表格请按行列输出。",
+            "请把这张图片中的全部文字逐字识别出来（OCR），保持原有顺序；若为表格请按行列输出。",
         )
+
+
+def normalize(name: str) -> str:
+    return (name or "").split(":", 1)[0].strip()
 
 
 vision = VisionEngine()

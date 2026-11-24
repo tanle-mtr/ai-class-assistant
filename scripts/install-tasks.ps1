@@ -2,9 +2,13 @@
 # 用法：右键"以管理员身份运行"本脚本
 $ErrorActionPreference = "Stop"
 
-$root = Split-Path -Parent $PSScriptRoot
-$startScript = Join-Path $root "start-assistant.ps1"
-$stopScript  = Join-Path $root "stop-assistant.ps1"
+# 修 v1 的路径 bug：脚本就在 scripts/ 下，直接用 $PSScriptRoot
+$startScript = Join-Path $PSScriptRoot "start-assistant.ps1"
+$stopScript  = Join-Path $PSScriptRoot "stop-assistant.ps1"
+
+if (-not (Test-Path $startScript) -or -not (Test-Path $stopScript)) {
+    throw "未找到 start-assistant.ps1 / stop-assistant.ps1，请确认脚本完整"
+}
 
 # ---- 开机启动任务 ----
 $actionStart = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$startScript`""
