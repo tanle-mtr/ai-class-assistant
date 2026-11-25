@@ -1,23 +1,17 @@
 # 运行时数据 / 配置（不提交）
 data/
-*.spec
 build/
 dist/
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-.venv/
-venv/
+# .NET 构建产物（v3 统一在 src/ 下）
+**/bin/
+**/obj/
+*.user
 
-# Node / Vue 构建产物
-webui/node_modules/
-webui/dist/
-
-# .NET 构建产物
-tray/**/bin/
-tray/**/obj/
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
 
 # 日志
 *.log

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>AiClassAssistant.Core</RootNamespace>
+    <AssemblyName>AiClassAssistant.Core</AssemblyName>
+  </PropertyGroup>
+
+  <!-- 技能库是数据文件：既复制到输出目录，也嵌入程序集作为兜底，保证任何启动方式都能加载 -->
+  <ItemGroup>
+    <None Update="Assets\skills\*.md" CopyToOutputDirectory="PreserveNewest" TargetPath="skills\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets\skills\*.md" LogicalName="AiClassAssistant.Core.Skills.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiClassAssistant.Core", "Core\AiClassAssistant.Core.csproj", "{4D073004-06AB-4002-9856-EBB0E82A233A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiClassAssistant.Perception", "Perception\AiClassAssistant.Perception.csproj", "{8DF412F6-6E56-4E4A-9AB9-3D9BD88C62C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiClassAssistant.ClassIsland", "ClassIsland\AiClassAssistant.ClassIsland.csproj", "{7C6B8967-3B40-49DF-B2AF-2033B90E808B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiClassAssistant.Bridge", "Bridge\AiClassAssistant.Bridge.csproj", "{FDF6BF21-2CE4-4D28-B3D4-D27BB53F454E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiClassAssistant.Ui", "Ui\AiClassAssistant.Ui.csproj", "{67FACAE9-E50C-49FD-A162-D17BBACDE812}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiClassAssistant.App", "App\AiClassAssistant.App.csproj", "{D003512B-6859-4028-87EE-FE33A4CA55B5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D073004-06AB-4002-9856-EBB0E82A233A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D073004-06AB-4002-9856-EBB0E82A233A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D073004-06AB-4002-9856-EBB0E82A233A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D073004-06AB-4002-9856-EBB0E82A233A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DF412F6-6E56-4E4A-9AB9-3D9BD88C62C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DF412F6-6E56-4E4A-9AB9-3D9BD88C62C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DF412F6-6E56-4E4A-9AB9-3D9BD88C62C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DF412F6-6E56-4E4A-9AB9-3D9BD88C62C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C6B8967-3B40-49DF-B2AF-2033B90E808B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C6B8967-3B40-49DF-B2AF-2033B90E808B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C6B8967-3B40-49DF-B2AF-2033B90E808B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C6B8967-3B40-49DF-B2AF-2033B90E808B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDF6BF21-2CE4-4D28-B3D4-D27BB53F454E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDF6BF21-2CE4-4D28-B3D4-D27BB53F454E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDF6BF21-2CE4-4D28-B3D4-D27BB53F454E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDF6BF21-2CE4-4D28-B3D4-D27BB53F454E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67FACAE9-E50C-49FD-A162-D17BBACDE812}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67FACAE9-E50C-49FD-A162-D17BBACDE812}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67FACAE9-E50C-49FD-A162-D17BBACDE812}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67FACAE9-E50C-49FD-A162-D17BBACDE812}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D003512B-6859-4028-87EE-FE33A4CA55B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D003512B-6859-4028-87EE-FE33A4CA55B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D003512B-6859-4028-87EE-FE33A4CA55B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D003512B-6859-4028-87EE-FE33A4CA55B5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

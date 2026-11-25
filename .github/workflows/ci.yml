@@ -1,6 +1,6 @@
 name: CI
 
-# 只针对主分支与 PR 校验，避免 forks 上的多余耗时
+# v3 全原生自研：只校验 .NET 解决方案，无 Python / Node 环节
 on:
   push:
     branches: [main]
@@ -13,39 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  python:
-    name: Python core (syntax)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Compile-check Python sources
-        run: python -m compileall -q assistant_core run.py
-
-  webui:
-    name: Web console (Vite build)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: webui
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: webui/package-lock.json
-
-      - run: npm ci
-      - run: npm run build
-
-  tray:
-    name: Tray & bridge (.NET build)
+  build:
+    name: .NET 8 solution (all projects, warnings as errors)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,11 +27,7 @@ jobs:
         run: dotnet --list-sdks
         shell: pwsh
 
-      # 用隐式还原（dotnet build 默认会 restore），避免漏 restore 某个工程导致 NETSDK1004
-      - name: Build ClassIslandBridge
-        run: dotnet build tray/ClassIslandBridge/ClassIslandBridge.csproj -c Release -warnaserror
-        shell: pwsh
-
-      - name: Build AssistantTray
-        run: dotnet build tray/AssistantTray/AssistantTray.csproj -c Release -warnaserror
+      # 隐式还原，避免漏 restore 某个工程导致 NETSDK1004
+      - name: Build solution
+        run: dotnet build src/AiClassAssistant.sln -c Release -warnaserror
         shell: pwsh

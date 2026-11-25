@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>AI课堂助手</AssemblyName>
+    <RootNamespace>AiClassAssistant.App</RootNamespace>
+    <ApplicationIcon>../../icons/app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core/AiClassAssistant.Core.csproj" />
+    <ProjectReference Include="../Perception/AiClassAssistant.Perception.csproj" />
+    <ProjectReference Include="../ClassIsland/AiClassAssistant.ClassIsland.csproj" />
+    <ProjectReference Include="../Ui/AiClassAssistant.Ui.csproj" />
+  </ItemGroup>
+</Project>
